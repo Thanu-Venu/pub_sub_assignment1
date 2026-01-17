@@ -1,2 +1,30 @@
-# pub_sub_assignment1
-CLI-based Publish–Subscribe middleware using socket programming with multi-client support and topic-based message routing (SCS2314 assignment).
+# Publish–Subscribe Middleware Architecture (SCS2314)
+
+This repository contains the implementation of a simple **Publish–Subscribe (Pub/Sub) middleware** using client–server socket programming concepts.  
+The project is developed as part of the **Middleware Architectures (SCS2314)** module.
+
+## Features
+- CLI-based client–server communication
+- Multiple concurrent clients
+- Publisher and Subscriber roles
+- Topic-based message filtering
+- Asynchronous message distribution
+
+## Technologies
+- Programming Language: (Python / Java / C)
+- Communication: TCP Sockets
+- Interface: Command Line Interface (CLI)
+
+## Team
+This project is developed by a team of **4 members** as per assignment guidelines.
+
+## Folder Structure
+- `task1/` – Basic client–server socket communication
+- `task2/` – Multi-client support with publishers and subscribers
+- `task3/` – Topic-based publish–subscribe messaging
+- `task4/` – Architecture enhancement proposal
+- `final_source_code/` – Final combined implementation
+- `videos/` – Demonstration screencasts
+
+## How to Run
+Detailed instructions are provided inside each task folder.
