@@ -1,15 +1,75 @@
-# Task 1 – Client–Server Application
+# 📡 Middleware Architectures – Assignment 01  
+## Task 1: Client–Server Socket Application (Python)
 
-## Objective
-To implement a basic client–server socket application where a single client communicates with a server using text-based messages.
+**Module:** SCS2314 – Middleware Architectures  
+**University:** UCSC  
+**Year:** 2025  
+**Task:** Basic Client–Server communication using sockets
 
-## Description
-- The server listens on a predefined port.
-- The client connects using server IP and port.
-- Any text entered on the client CLI is displayed on the server CLI.
-- The client terminates when the keyword `terminate` is entered.
+---
 
-## How to Run
-### Server
+## 🎯 Objective
+The objective of Task 1 is to demonstrate basic **Client–Server communication** using **TCP sockets**.  
+A client sends text messages via a Command Line Interface (CLI), and the server displays those messages on its terminal.
+
+---
+
+## 🛠️ Technology Stack
+- Language: **Python 3**
+- Communication: **TCP Sockets**
+- Interface: **Command Line (CLI)**
+
+---
+
+## 📁 Directory Structure
+-task1/
+-├── server.py
+-├── client.py
+-└── README.md
+
+---
+
+## ▶️ How to Run the Application
+
+### 🔹 Step 1: Start the Server
+Open a terminal and navigate to the project folder.
+
+**Windows**
 ```bash
-my_server_app <PORT>
+python server.py 5000
+
+Expected output:
+[SERVER] Listening on 0.0.0.0:5000
+
+### 🔹 Step 2: Start the Client
+
+Open a new terminal in the same folder.
+
+Windows
+
+python client.py 127.0.0.1 5000
+Expected output:
+
+[CLIENT] Connected to 127.0.0.1:5000
+💬 Communication Flow
+
+Type any text in the client terminal
+
+The message will appear instantly on the server terminal
+
+The client runs continuously until a termination keyword is entered
+
+❌ Terminating the Client
+
+To stop the client, type:
+
+terminate
+
+
+Expected behavior:
+
+Client disconnects from server
+
+Client program exits
+
+Server detects client disconnection
