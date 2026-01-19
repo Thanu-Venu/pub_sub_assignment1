@@ -11,7 +11,7 @@ The project is developed as part of the **Middleware Architectures (SCS2314)** m
 - Asynchronous message distribution
 
 ## Technologies
-- Programming Language: (Python / Java / C)
+- Programming Language: Python
 - Communication: TCP Sockets
 - Interface: Command Line Interface (CLI)
 
@@ -26,6 +26,3 @@ This project is developed by a team of **4 members** as per assignment guideline
 - `final_source_code/` – Final combined implementation
 - `videos/` – Demonstration screencasts
 
-## How to Run
-Detailed instructions are provided inside each task folder.
-check it out

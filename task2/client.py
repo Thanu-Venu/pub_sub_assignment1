@@ -1,12 +1,9 @@
+#!/usr/bin/env python3
 import socket
 import sys
 import threading
 
 def receive_messages(sock):
-    """
-    Thread function for SUBSCRIBERS to receive messages
-    from the server continuously.
-    """
     while True:
         try:
             data = sock.recv(1024)
@@ -21,26 +18,26 @@ def run_client(server_ip: str, port: int, role: str) -> None:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
-        # Connect to server
+        
         sock.connect((server_ip, port))
         print(f"[CLIENT] Connected to {server_ip}:{port}")
 
-        # Send role to server
+        
         sock.sendall((role + "\n").encode("utf-8"))
         print(f"[CLIENT] Running as {role}")
 
-        # ---------------- SUBSCRIBER MODE ----------------
+        
         if role == "SUBSCRIBER":
             print("[CLIENT] Waiting for messages from publishers...\n")
             thread = threading.Thread(target=receive_messages, args=(sock,))
             thread.daemon = True
             thread.start()
 
-            # Keep subscriber alive
+           
             while True:
                 pass
 
-        # ---------------- PUBLISHER MODE ----------------#
+       
         elif role == "PUBLISHER":
             print('Type messages and press Enter. Type "terminate" to exit.\n')
             while True:
@@ -59,7 +56,7 @@ def run_client(server_ip: str, port: int, role: str) -> None:
         sock.close()
         print("[CLIENT] Connection closed.")
 
-# ---------------- MAIN ---------------- #
+
 if __name__ == "__main__":
     if len(sys.argv) != 4:
         print("Usage: python client.py <SERVER_IP> <PORT> <PUBLISHER|SUBSCRIBER>")
