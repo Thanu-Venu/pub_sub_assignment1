@@ -1,3 +1,9 @@
+# Team members
+23002093-T.Venugoban
+23001895-S.Shaganjaly
+23001331-K.Parmila
+23000121-P.Arulpirabakar
+ 
 # Publish–Subscribe Middleware Architecture (SCS2314)
 
 This repository contains the implementation of a simple **Publish–Subscribe (Pub/Sub) middleware** using client–server socket programming concepts.  
