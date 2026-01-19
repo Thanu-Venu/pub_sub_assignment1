@@ -6,10 +6,8 @@ import sys
 def run_server(port: int) -> None:
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    # Allows reusing the port quickly after stopping the server
     server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    # Bind to all network interfaces
     server_sock.bind(("0.0.0.0", port))
     server_sock.listen(1)
 
@@ -19,7 +17,6 @@ def run_server(port: int) -> None:
     print(f"[SERVER] Client connected from {addr[0]}:{addr[1]}")
 
     try:
-        # Read messages until client closes
         while True:
             data = conn.recv(1024)
             if not data:

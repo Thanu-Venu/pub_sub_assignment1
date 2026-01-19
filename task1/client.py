@@ -18,7 +18,6 @@ def run_client(server_ip: str, port: int) -> None:
                 print("[CLIENT] Terminating and disconnecting...")
                 break
 
-            # Send message (add newline so it's clear in terminal)
             sock.sendall((text + "\n").encode("utf-8"))
 
     except ConnectionRefusedError:

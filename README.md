@@ -1,3 +1,9 @@
+# Team members
+23002093-T.Venugoban
+23001895-S.Shaganjaly
+23001331-K.Parmila
+23000121-P.Arulpirabakar
+ 
 # Publish–Subscribe Middleware Architecture (SCS2314)
 
 This repository contains the implementation of a simple **Publish–Subscribe (Pub/Sub) middleware** using client–server socket programming concepts.  
@@ -11,7 +17,7 @@ The project is developed as part of the **Middleware Architectures (SCS2314)** m
 - Asynchronous message distribution
 
 ## Technologies
-- Programming Language: (Python / Java / C)
+- Programming Language: Python
 - Communication: TCP Sockets
 - Interface: Command Line Interface (CLI)
 
@@ -26,6 +32,3 @@ This project is developed by a team of **4 members** as per assignment guideline
 - `final_source_code/` – Final combined implementation
 - `videos/` – Demonstration screencasts
 
-## How to Run
-Detailed instructions are provided inside each task folder.
-check it out

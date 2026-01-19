@@ -3,25 +3,19 @@ import socket
 import sys
 import threading
 
-
-# We keep lists of sockets for each role
 publishers = []
 subscribers = []
 
-# Lock is used to safely edit the lists from multiple threads
 clients_lock = threading.Lock()
 
 
 def recv_line(conn: socket.socket) -> str:
-    """
-    Reads bytes from conn until a newline '\n' is found.
-    Returns the decoded line (without '\n').
-    """
+   
     buffer = b""
     while True:
-        chunk = conn.recv(1)  # read 1 byte at a time
+        chunk = conn.recv(1)  
         if not chunk:
-            # client disconnected before sending a full line
+            
             return ""
         if chunk == b"\n":
             break
@@ -31,10 +25,7 @@ def recv_line(conn: socket.socket) -> str:
 
 
 def broadcast_to_subscribers(message: str) -> None:
-    """
-    Send a message to all connected subscriber sockets.
-    Removes subscribers that are disconnected.
-    """
+   
     dead = []
 
     with clients_lock:
@@ -42,10 +33,8 @@ def broadcast_to_subscribers(message: str) -> None:
             try:
                 sub.sendall((message + "\n").encode("utf-8"))
             except Exception:
-                # if sending fails, subscriber is likely disconnected
                 dead.append(sub)
 
-        # remove dead subscribers
         for sub in dead:
             try:
                 subscribers.remove(sub)
@@ -58,14 +47,10 @@ def broadcast_to_subscribers(message: str) -> None:
 
 
 def handle_client(conn: socket.socket, addr) -> None:
-    """
-    Runs in a separate thread for each connected client.
-    Identifies role, then handles messages.
-    """
+    
     ip, port = addr[0], addr[1]
     print(f"[SERVER] New connection from {ip}:{port}")
 
-    # Step 1: receive role line from client
     role = recv_line(conn).upper()
 
     if role not in ("PUBLISHER", "SUBSCRIBER"):
@@ -77,7 +62,6 @@ def handle_client(conn: socket.socket, addr) -> None:
         conn.close()
         return
 
-    # Step 2: register client socket in correct list
     with clients_lock:
         if role == "PUBLISHER":
             publishers.append(conn)
@@ -90,26 +74,20 @@ def handle_client(conn: socket.socket, addr) -> None:
         while True:
             data = conn.recv(1024)
             if not data:
-                # client disconnected
                 print(f"[SERVER] {role} disconnected: {ip}:{port}")
                 break
 
-            # decode message
             msg = data.decode("utf-8", errors="replace").rstrip("\n").strip()
 
-            # server prints messages received from any client (requirement #2)
             print(f"[SERVER] From {role} {ip}:{port} -> {msg}")
 
-            # Step 3: only broadcast if sender is a PUBLISHER
             if role == "PUBLISHER":
                 broadcast_to_subscribers(f"[PUBLISHER {ip}:{port}] {msg}")
 
     except (ConnectionResetError, OSError):
-        # Windows: WinError 10054 happens when client closes the terminal/window forcefully
         print(f"[SERVER] {role} disconnected unexpectedly: {ip}:{port}")
 
     finally:
-        # Step 4: clean remove and close
         with clients_lock:
             if conn in publishers:
                 publishers.remove(conn)
@@ -125,11 +103,9 @@ def handle_client(conn: socket.socket, addr) -> None:
 
 
 def run_server(port: int) -> None:
-    # create server socket (TCP)
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    # bind and listen
     server_sock.bind(("0.0.0.0", port))
     server_sock.listen()
 
@@ -139,7 +115,6 @@ def run_server(port: int) -> None:
         while True:
             conn, addr = server_sock.accept()
 
-            # create a new thread for each client
             t = threading.Thread(target=handle_client, args=(conn, addr), daemon=True)
             t.start()
 

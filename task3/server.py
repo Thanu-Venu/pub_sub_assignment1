@@ -3,48 +3,66 @@ import socket
 import sys
 import threading
 
-# Store clients as dictionaries
-clients = []  # { "socket": conn, "role": role, "topic": topic }
+clients = []
 clients_lock = threading.Lock()
 
 
-def recv_line(conn):
+def recv_line(conn: socket.socket) -> str:
+    """
+    Read a single line ending with '\n' from the socket.
+    Returns "" if the client disconnects before sending a full line.
+    """
     buffer = b""
     while True:
-        chunk = conn.recv(1)
+        try:
+            chunk = conn.recv(1)
+        except (ConnectionResetError, OSError):
+            return ""
+
         if not chunk:
             return ""
         if chunk == b"\n":
             break
         buffer += chunk
-    return buffer.decode().strip()
+
+    return buffer.decode("utf-8", errors="replace").strip()
 
 
-def broadcast_by_topic(message, topic):
+def broadcast_by_topic(message: str, topic: str) -> None:
     dead = []
 
     with clients_lock:
         for c in clients:
             if c["role"] == "SUBSCRIBER" and c["topic"] == topic:
                 try:
-                    c["socket"].sendall((message + "\n").encode())
-                except:
+                    c["socket"].sendall((message + "\n").encode("utf-8"))
+                except (ConnectionResetError, BrokenPipeError, OSError):
                     dead.append(c)
 
         for d in dead:
-            clients.remove(d)
-            d["socket"].close()
+            try:
+                clients.remove(d)
+            except ValueError:
+                pass
+            try:
+                d["socket"].close()
+            except Exception:
+                pass
 
 
-def handle_client(conn, addr):
-    ip, port = addr
+def handle_client(conn: socket.socket, addr) -> None:
+    ip, port = addr[0], addr[1]
     print(f"[SERVER] Connected: {ip}:{port}")
 
     role = recv_line(conn).upper()
     topic = recv_line(conn).upper()
 
-    if role not in ("PUBLISHER", "SUBSCRIBER"):
-        conn.close()
+    if role not in ("PUBLISHER", "SUBSCRIBER") or topic == "":
+        try:
+            conn.close()
+        except Exception:
+            pass
+        print(f"[SERVER] Invalid handshake from {ip}:{port}. Connection closed.")
         return
 
     with clients_lock:
@@ -58,11 +76,19 @@ def handle_client(conn, addr):
 
     try:
         while True:
-            data = conn.recv(1024)
+            try:
+                data = conn.recv(1024)
+            except (ConnectionResetError, OSError):
+                print(f"[SERVER] Disconnected unexpectedly: {ip}:{port}")
+                break
+
             if not data:
                 break
 
-            msg = data.decode().strip()
+            msg = data.decode("utf-8", errors="replace").strip()
+            if not msg:
+                continue
+
             print(f"[SERVER] {role} [{topic}] -> {msg}")
 
             if role == "PUBLISHER":
@@ -71,11 +97,16 @@ def handle_client(conn, addr):
     finally:
         with clients_lock:
             clients[:] = [c for c in clients if c["socket"] != conn]
-        conn.close()
+
+        try:
+            conn.close()
+        except Exception:
+            pass
+
         print(f"[SERVER] Disconnected: {ip}:{port}")
 
 
-def run_server(port):
+def run_server(port: int) -> None:
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind(("0.0.0.0", port))
@@ -88,10 +119,26 @@ def run_server(port):
             conn, addr = server.accept()
             threading.Thread(target=handle_client, args=(conn, addr), daemon=True).start()
     except KeyboardInterrupt:
-        print("\n[SERVER] Server stopped")
+        print("\n[SERVER] Server stopped (KeyboardInterrupt).")
     finally:
-        server.close()
+        try:
+            server.close()
+        except Exception:
+            pass
+        print("[SERVER] Server closed.")
 
 
 if __name__ == "__main__":
-    run_server(int(sys.argv[1]))
+    if len(sys.argv) != 2:
+        print("Usage: python server.py <PORT>")
+        sys.exit(1)
+
+    try:
+        port_num = int(sys.argv[1])
+        if not (1 <= port_num <= 65535):
+            raise ValueError
+    except ValueError:
+        print("Error: PORT must be an integer between 1 and 65535")
+        sys.exit(1)
+
+    run_server(port_num)
