@@ -1,7 +1,7 @@
+#!/usr/bin/env python3
 import socket
 import sys
 import threading
-
 
 def receive_messages(sock):
     while True:
@@ -10,43 +10,60 @@ def receive_messages(sock):
             if not data:
                 print("[CLIENT] Server disconnected.")
                 break
-            print(data.decode().strip())
+            print(data.decode("utf-8").strip())
         except:
             break
 
-
-def run_client(ip, port, role, topic):
+def run_client(server_ip: str, port: int, role: str, topic: str):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((ip, port))
+    try:
+        sock.connect((server_ip, port))
+        print(f"[CLIENT] Connected to {server_ip}:{port}")
+        sock.sendall((role + "\n").encode("utf-8"))
+        sock.sendall((topic + "\n").encode("utf-8"))
+        print(f"[CLIENT] Running as {role} on topic [{topic}]")
 
-    sock.sendall((role + "\n").encode())
-    sock.sendall((topic + "\n").encode())
+        if role == "SUBSCRIBER":
+            thread = threading.Thread(target=receive_messages, args=(sock,))
+            thread.daemon = True
+            thread.start()
+            while True:
+                pass
 
-    print(f"[CLIENT] {role} connected on topic [{topic}]")
+        elif role == "PUBLISHER":
+            print('Type messages and press Enter. Type "terminate" to exit.\n')
+            while True:
+                message = input("> ").strip()
+                if message.lower() == "terminate":
+                    sock.sendall("terminate\n".encode("utf-8"))
+                    print("[CLIENT] Terminating connection...")
+                    break
+                sock.sendall((message + "\n").encode("utf-8"))
 
-    if role == "SUBSCRIBER":
-        threading.Thread(target=receive_messages, args=(sock,), daemon=True).start()
-        while True:
-            pass
-
-    else:
-        while True:
-            msg = input("> ")
-            if msg.lower() == "terminate":
-                break
-            sock.sendall((msg + "\n").encode())
-
-    sock.close()
-
+    except ConnectionRefusedError:
+        print("[CLIENT] Connection refused. Is the server running?")
+    except KeyboardInterrupt:
+        print("\n[CLIENT] Client stopped.")
+    finally:
+        sock.close()
+        print("[CLIENT] Connection closed.")
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
-        print("Usage: python client.py <IP> <PORT> <PUBLISHER|SUBSCRIBER> <TOPIC>")
+        print("Usage: python client.py <SERVER_IP> <PORT> <PUBLISHER|SUBSCRIBER> <TOPIC>")
         sys.exit(1)
 
-    run_client(
-        sys.argv[1],
-        int(sys.argv[2]),
-        sys.argv[3].upper(),
-        sys.argv[4].upper()
-    )
+    server_ip = sys.argv[1]
+    try:
+        port_num = int(sys.argv[2])
+    except ValueError:
+        print("PORT must be a number.")
+        sys.exit(1)
+
+    role = sys.argv[3].upper()
+    if role not in ("PUBLISHER", "SUBSCRIBER"):
+        print("Role must be PUBLISHER or SUBSCRIBER.")
+        sys.exit(1)
+
+    topic = sys.argv[4].upper()
+    run_client(server_ip, port_num, role, topic)
